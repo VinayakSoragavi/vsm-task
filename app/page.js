@@ -1,113 +1,140 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
 
-export default function Home() {
+// AddTask Component
+function AddTask({ addtask, setAddtask, setMenuupdate }) {
+  const [name, setName] = useState("");
+  const [task, setTask] = useState("");
+
+  const handleAddTask = () => {
+    if (name.trim() === "" || task.trim() === "") return;
+    setMenuupdate((prev) => [
+      ...prev,
+      {
+        name: name,
+        status: task,
+      },
+    ]);
+    setName("");
+    setTask("");
+    setAddtask(false);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      className={`${addtask ? "block" : "hidden"
+        } absolute z-50 w-full top-0 left-0 flex justify-center bg-gray-800 bg-opacity-75 h-screen items-center`}
+    >
+      <div className="w-96 bg-white p-5 rounded shadow-lg">
+        <div>
+          <input
+            onChange={(e) => setName(e.target.value)}
+            value={name}
+            className="w-full h-10 p-2 mb-4 border border-gray-300 rounded text-black"
+            type="text"
+            placeholder="Task Name"
+          />
+        </div>
+        <div>
+          <select
+            onChange={(e) => setTask(e.target.value)}
+            value={task}
+            className="w-full h-10 p-2 mb-4 border border-gray-300 rounded text-black"
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            <option value="" disabled>
+              Select Status
+            </option>
+            <option className="text-black" value="completed">Completed</option>
+            <option className="text-black" value="uncompleted">Uncompleted</option>
+          </select>
+        </div>
+        <div className="flex justify-between">
+          <button
+            onClick={() => setAddtask(false)}
+            className="bg-red-500 text-white p-2 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAddTask}
+            className="bg-blue-500 text-white p-2 rounded"
+          >
+            Add
+          </button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+// Home Component
+export default function Home() {
+  const initialTasks = [
+    {
+      name: "abc",
+      status: "completed",
+    },
+  ];
+  const [menuupdate, setMenuupdate] = useState(initialTasks);
+  const [addtask, setAddtask] = useState(false);
+
+  const deleteTask = (index) => {
+    setMenuupdate(menuupdate.filter((_, i) => i !== index));
+  };
+
+  const toggleTaskStatus = (index) => {
+    const updatedTasks = menuupdate.map((task, i) =>
+      i === index
+        ? { ...task, status: task.status === "completed" ? "uncompleted" : "completed" }
+        : task
+    );
+    setMenuupdate(updatedTasks);
+  };
+
+  return (
+    <>
+      <div className="w-full pt-10">
+        <div className="flex justify-around">
+          <div>
+            <button
+              onClick={() => setAddtask(true)}
+              className="bg-blue-800 text-white p-4 rounded"
+            >
+              Add Task
+            </button>
+          </div>
+          <div className="w-96 space-y-3">
+            {menuupdate.map((elem, index) => (
+              <div
+                key={index}
+                className={`${elem.status === "completed" ? "bg-blue-500" : "bg-red-600"
+                  } flex justify-between items-center p-3 rounded`}
+              >
+                <div className="flex items-center">
+                  <input
+                    checked={elem.status === "completed"}
+                    onChange={() => toggleTaskStatus(index)}
+                    className="w-4 h-4"
+                    type="checkbox"
+                  />
+                  <p className="ml-5 text-white">{elem.name}</p>
+                </div>
+                <button
+                  onClick={() => deleteTask(index)}
+                  className="bg-red-700 text-white p-2 rounded"
+                >
+                  Delete Task
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <AddTask
+        addtask={addtask}
+        setAddtask={setAddtask}
+        setMenuupdate={setMenuupdate}
+      />
+    </>
   );
 }
